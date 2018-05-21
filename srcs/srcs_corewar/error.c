@@ -6,7 +6,7 @@
 /*   By: cyrillef <cyrillef@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2017/11/24 15:43:56 by cyrillef          #+#    #+#             */
-/*   Updated: 2018/01/04 16:13:04 by cyrillefrouin    ###   ########.fr       */
+/*   Updated: 2018/04/21 10:40:19 by cfrouin          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -29,12 +29,16 @@ static void		free_map(t_node *list)
 {
 	t_node		*tmp;
 
-	list->prev->next = NULL;
-	while (list != NULL)
+	if (list != NULL)
 	{
-		tmp = list;
-		list = list->next;
-		free(tmp);
+		if (list->prev != NULL)
+			list->prev->next = NULL;
+		while (list != NULL)
+		{
+			tmp = list;
+			list = list->next;
+			free(tmp);
+		}
 	}
 }
 
@@ -46,6 +50,13 @@ void			free_data(t_data *data)
 		free_map(data->map);
 		free(data);
 	}
+}
+
+void			usage(void)
+{
+	ft_printf("Usage: ./corewar [-g] [-stealth] [-debug] [-dump X] \
+[-v X] [[-n] champion.cor]\n");
+	exit(EXIT_FAILURE);
 }
 
 void			corewar_error(t_data *data, char *error)

@@ -5,8 +5,8 @@
 #                                                     +:+ +:+         +:+      #
 #    By: cyrillef <cyrillef@student.42.fr>          +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
-#    Created: 2017/11/13 15:07:13 by cyrillef          #+#    #+#              #
-#    Updated: 2018/03/13 17:17:53 by cfrouin          ###   ########.fr        #
+#    Created: 2018/04/05 15:49:50 by cyrillef          #+#    #+#              #
+#    Updated: 2018/04/22 16:59:24 by dwald            ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -23,8 +23,10 @@ SRCS_ASM			=	main.c \
 						error.c \
 						parsing_champ.c \
 						header.c \
-						check_arguments.c \
 						check_core.c \
+						empty_line.c \
+						ft_word_tab_asm.c \
+						fill_data_tab.c \
 						instructions/live.c \
 						instructions/ld.c \
 						instructions/st.c \
@@ -41,7 +43,14 @@ SRCS_ASM			=	main.c \
 						instructions/lldi.c \
 						instructions/lfork.c \
 						instructions/aff.c \
-						do_cor.c
+						check_arguments.c \
+						size_function.c \
+						check_miss_label.c \
+						search_label.c \
+						do_cor.c \
+						do_function.c \
+						type_param.c \
+						write_label.c
 
 SRCS_ASM_FULL		=	$(addprefix $(SRCS_ASM_DIR), $(SRCS_ASM))
 
@@ -51,15 +60,17 @@ SRCS_COREWAR		=	main.c \
 						dump.c \
 						debug.c \
 						op.c \
+						sort_champs.c \
 						init_data.c \
-						verbose_flags.c \
+						manage_args.c \
+						get_params.c \
 						read_champions.c \
 						init_map.c \
 						number_to_hex_str.c \
 						vm.c \
+						check_live.c \
 						prepare_next_op.c \
 						do_next_op.c \
-						vm_check_live.c \
 						display_vm.c \
 						display_vm_2.c \
 						tty.c \
@@ -80,7 +91,11 @@ SRCS_COREWAR		=	main.c \
 						cmd/sub.c \
 						cmd/xor.c \
 						cmd/zjmp.c \
-						cmd/cmd_auxiliary_functions.c
+						cmd/ljmp.c \
+						cmd/cmd_auxiliary_functions.c \
+						cmd/vm_address_management.c \
+						cmd/ft_atoi_base.c \
+						cmd/colors.c
 
 SRCS_COREWAR_FULL	=	$(addprefix $(SRCS_COREWAR_DIR), $(SRCS_COREWAR))
 
@@ -88,7 +103,7 @@ OBJS_ASM			=	$(SRCS_ASM_FULL:.c=.o)
 
 OBJS_COREWAR		=	$(SRCS_COREWAR_FULL:.c=.o)
 
-CFLAGS				=	-Wall -Wextra -I./includes/
+CFLAGS				=	-Wall -Wextra -Werror -I./includes/
 
 all:				libft $(NAME_ASM) $(NAME_COREWAR)
 
@@ -147,4 +162,4 @@ re:					fclean all
 
 ren:				rfclean all
 
-.PHONY:				all clean fclean re ren
+.PHONY:				all clean fclean re ren libft rclean rfclean

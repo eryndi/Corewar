@@ -3,33 +3,53 @@
 /*                                                        :::      ::::::::   */
 /*   zjmp.c                                             :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: dwald <marvin@42.fr>                       +#+  +:+       +#+        */
+/*   By: dwald <dwald@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2018/02/05 11:46:06 by dwald             #+#    #+#             */
-/*   Updated: 2018/02/26 15:12:19 by dwald            ###   ########.fr       */
+/*   Updated: 2018/04/20 18:08:29 by cyrillefrouin    ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "corewar.h"
 
-int		corewar_zjmp(t_data *data, t_champion *champ)
+static	int		check_error_zjmp(int param, int player, t_data *data)
+{
+	if (param != DIR_CODE)
+	{
+		if ((data->verbose & 32) == 32)
+			ft_printf("ERROR: Process %i tries to read instruction's parameter \
+with no valid argument type\n", player);
+		return (-2);
+	}
+	else
+		return (0);
+}
+
+int				corewar_zjmp(t_data *data, t_champion *champ)
 {
 	short	pc_dest;
-	t_node	*tmp;
+	int		index;
+	char	color[7];
 
-	(void)data;
-	tmp = champ->pc;
-	if (champ->argsType[0] != DIR_CODE)
+	pc_dest = 0;
+	if (data->debug)
+		dump_state("zjump", data, champ);
+	if (check_error_zjmp(champ->argstype[0], champ->number, data) == -1)
 		return (-1);
+	pc_dest = mem_mod(champ->oldpc->id + idx_address(champ->args[0]));
+	index = pc_dest - champ->oldpc->id;
+	color_champion(champ->number, color);
 	if (champ->carry == 1)
 	{
-		pc_dest = champ->args[0] + champ->ipc;
-		while (champ->ipc < pc_dest--)
-			tmp = tmp->next;
-//assigning new node pointer (memory emplacement in VM's RAM)
-		champ->pc = tmp;
-//changing PC accordingly
-		champ->ipc = champ->args[0] + champ->ipc;
+		while (champ->pc->id != pc_dest)
+			champ->pc = champ->pc->next;
+		if ((data->verbose & 4) == 4)
+			ft_printf("%sPlayer #%d | zjmp %d (%d) OK (PC: %d)\n"RESET,
+			color, champ->number, champ->args[0], index, champ->pc->id);
+		return (1);
 	}
+	if ((data->verbose & 4) == 4)
+		ft_printf("%sPlayer #%d | zjmp %d (%d) FAILED (PC: %d)\n"RESET,
+		color, champ->number, champ->args[0], index, champ->pc->id);
 	return (1);
 }

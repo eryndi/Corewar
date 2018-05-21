@@ -6,7 +6,7 @@
 /*   By: kda-silv <kda-silv@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2018/01/31 14:59:41 by kda-silv          #+#    #+#             */
-/*   Updated: 2018/02/26 15:29:49 by kda-silv         ###   ########.fr       */
+/*   Updated: 2018/04/21 12:14:58 by kda-silv         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -26,7 +26,7 @@ static void		header_too_long(char *cmd, char *line, t_data *data, int count2)
 		asm_error("", 0, data, NULL);
 		asm_error("Champion name too long (max length 128)", 1, data, line);
 	}
-	if (cmd == COMMENT_CMD_STRING && count2 > (COMMENT_LENGTH - 1))
+	if (cmd == COMMENT_CMD_STRING && count2 > (COMMENT_LENGTH - 2))
 	{
 		asm_error("", 0, data, NULL);
 		asm_error("Champion comment too long (max length 2048)", 1, data, line);
@@ -40,7 +40,7 @@ static int		fill_header(char *line, char *cmd, char *source, t_data *data)
 	int			tmp;
 
 	count = (int)ft_strlen(cmd);
-	if ((tmp = strncmp(cmd, (line + skip_space(0, line)), count)) != 0)
+	if ((tmp = ft_strncmp(cmd, (line + skip_space(0, line)), count)) != 0)
 		header_error(cmd, 0, data, line);
 	count2 = 0;
 	if (line[(count = skip_space(count + 1, line))] != '\"')

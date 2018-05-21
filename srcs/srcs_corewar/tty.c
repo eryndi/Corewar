@@ -6,13 +6,13 @@
 /*   By: mapandel <mapandel@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2018/01/31 23:34:24 by mapandel          #+#    #+#             */
-/*   Updated: 2018/02/07 21:14:03 by mapandel         ###   ########.fr       */
+/*   Updated: 2018/04/20 22:38:48 by cfrouin          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "corewar.h"
 
-static void		set_mode(int want_key)
+void						set_mode(int want_key)
 {
 	static struct termios	old;
 	static struct termios	new;
@@ -20,7 +20,7 @@ static void		set_mode(int want_key)
 	if (!want_key)
 	{
 		tcsetattr(STDIN_FILENO, TCSANOW, &old);
-		return;
+		return ;
 	}
 	tcgetattr(STDIN_FILENO, &old);
 	new = old;
@@ -28,11 +28,11 @@ static void		set_mode(int want_key)
 	tcsetattr(STDIN_FILENO, TCSANOW, &new);
 }
 
-static int		get_key()
+static int					get_key(void)
 {
-	int				c;
-	struct timeval	tv;
-	fd_set			fs;
+	int						c;
+	struct timeval			tv;
+	fd_set					fs;
 
 	c = 0;
 	tv.tv_sec = 0;
@@ -45,25 +45,27 @@ static int		get_key()
 		c = getchar();
 		set_mode(0);
 	}
-	return c;
+	return (c);
 }
 
-void			key_hub(t_data *data)
+void						key_hub(t_data *data)
 {
-	int		c;
+	int						c;
 
 	set_mode(1);
 	c = get_key();
 	if (c == 113)
 	{
 		ft_putstr("\033[H\033[J\e[?25h");
-		exit(0); //FREE
+		free_data(data);
+		exit(0);
 	}
 	else if ((c == 97 && data->speed == 1) || (c == 100 && data->speed == -1))
 		data->speed *= -1;
 	else if ((c == 97 && data->speed > 1) || (c == 100 && data->speed < -1))
 		data->speed /= 2;
-	else if ((c == 97 && data->speed > -1024) || (c == 100 && data->speed < 1024))
+	else if ((c == 97 && data->speed > -1024)
+		|| (c == 100 && data->speed < 1024))
 		data->speed *= 2;
 	else if (c == 32 && data->pause)
 		data->pause = 0;

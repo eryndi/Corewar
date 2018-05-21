@@ -6,11 +6,57 @@
 /*   By: dwald <dwald@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2018/02/06 13:27:32 by dwald             #+#    #+#             */
-/*   Updated: 2018/03/13 17:35:07 by cfrouin          ###   ########.fr       */
+/*   Updated: 2018/04/20 18:08:16 by cyrillefrouin    ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "corewar.h"
+
+static	int		check_error_sti(int param[], t_champion *champ, t_data *data)
+{
+	bool	error;
+
+	param[0] = champ->argstype[0];
+	param[1] = champ->argstype[1];
+	param[2] = champ->argstype[2];
+	error = false;
+	if ((param[0] > 3 || param[0] < 1) || (param[1] > 3 || param[1] < 1)
+	|| (param[2] > 3 || param[2] < 1))
+		error = true;
+	else if (param[0] != REG_CODE || (param[2] != DIR_CODE
+	&& param[2] != REG_CODE))
+		error = true;
+	if (error == true)
+	{
+		if ((data->verbose & 32) == 32)
+			ft_printf("ERROR: Process %i tries to read instruction's parameter \
+with no valid argument type\n", champ->number);
+		return (-2);
+	}
+	else
+		return (0);
+}
+
+/*
+** Note: final address indicated as "with pc and mod" is always positive
+*/
+
+static	void	verbose_sti(t_data *data, t_champion *champ, int *parameter,
+				int pc_dest)
+{
+	char	color[7];
+
+	if ((data->verbose & 4) == 4)
+	{
+		color_champion(champ->number, color);
+		ft_printf("%sPlayer #%i | sti r%i %i %i\n",
+		color, champ->number, champ->args[0], parameter[0], parameter[1]);
+		ft_printf("          | -> store to %i + %i = %i (with pc and mod %i)\n"\
+		RESET, parameter[0], parameter[1], parameter[0] + parameter[1],\
+		pc_dest);
+	}
+	return ;
+}
 
 /*
 ** Take a registry and two indexes (potentially registries) add the two indexes
@@ -18,54 +64,28 @@
 ** will be copied.
 */
 
-int		corewar_sti(t_data *data, t_champion *champ)
+int				corewar_sti(t_data *data, t_champion *champ)
 {
-	t_node	*tmp;
 	short	pc_dest;
-	int		parameter[2];
+	int		parameter[3];
 
-	// Display tests
 	if (data->debug)
 		dump_state("STI", data, champ);
-	//end of tests
-	tmp = NULL;
-	pc_dest = mem_mod(champ->ipc + champ->args[0] % IDX_MOD);
-	(void)data;
-	if (champ->argsType[0] != REG_CODE || (champ->argsType[2] != DIR_CODE
-	&& champ->argsType[2] != REG_CODE))
-	{
-		//change to ft_dprintf
-		ft_printf("ERROR: Process %i tries to read instruction's parameter \
-with no valid argument type\n", champ->number);
+	if (check_error_sti((int(*))&parameter, champ, data) == -1)
 		return (-1);
-	}
-//  2nd param
-	if (champ->argsType[1] == REG_CODE)
+	if (parameter[1] == REG_CODE)
 		parameter[0] = champ->reg[champ->args[1]];
-	else if (champ->argsType[1] == IND_CODE)
-	{
-		ft_printf(RED"Looking for indirect value\n"RESET);
-		parameter[0] = find_indirect_value(champ, 1);
-	}
-	else if (champ->argsType[1] == DIR_CODE)
-		parameter[0] = champ->args[1];
-//	3rd param
-	if (champ->argsType[2] == REG_CODE)
-		parameter[1] = champ->reg[champ->args[2]];
-	else if (champ->argsType[2] == DIR_CODE)
-		parameter[1] = champ->args[2];
-//get final address and stock there reg[param1]
-	pc_dest = mem_mod((parameter[0] + parameter[1]) % IDX_MOD);
-//	ft_printf(YELLOW"champ ipc = %d, pc_dest = %d\n"RESET,champ->ipc, pc_dest);
-	pc_dest = write_in_ram(champ, pc_dest);
-//	write_in_ram(champ, pc_dest, parameter[2]); possible adaptation
-	if (verbose_operations(data) == 1)
-	{
-		ft_printf(CYAN"Player #%i | sti r%i %i %i\n\
-	  | -> store to %i + %i = %i (with pc and mod %i) register value %i\n"RESET,
-		champ->number, champ->args[0], parameter[0], parameter[1], parameter[0],
-		parameter[1], parameter[0] + parameter[1], pc_dest,
-		champ->reg[champ->args[0]]);
-	}
+	else if (parameter[1] == IND_CODE)
+		parameter[0] = get_mem_32bits(champ, idx_address(champ->args[1]));
+	else if (parameter[1] == DIR_CODE)
+		parameter[0] = get_address(champ->args[1]);
+	if (parameter[2] == REG_CODE)
+		parameter[1] = get_address(champ->reg[champ->args[2]]);
+	else if (parameter[2] == DIR_CODE)
+		parameter[1] = get_address(champ->args[2]);
+	pc_dest = mem_mod(champ->oldpc->id
+	+ (parameter[0] + parameter[1]) % IDX_MOD);
+	write_in_ram(champ, pc_dest);
+	verbose_sti(data, champ, parameter, pc_dest);
 	return (1);
 }

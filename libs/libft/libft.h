@@ -6,7 +6,7 @@
 /*   By: kda-silv <kda-silv@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2017/05/17 16:53:18 by kda-silv          #+#    #+#             */
-/*   Updated: 2018/02/27 11:45:32 by kda-silv         ###   ########.fr       */
+/*   Updated: 2018/04/20 20:12:59 by cfrouin          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -57,6 +57,12 @@
 /*
 ** typedef
 */
+
+typedef struct		s_pos
+{
+	int				x;
+	int				y;
+}					t_pos;
 
 typedef	struct		s_printf_data
 {

@@ -6,21 +6,23 @@
 /*   By: zaz <zaz@student.42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2013/10/04 11:33:27 by zaz               #+#    #+#             */
-/*   Updated: 2018/02/28 15:57:24 by cyrillefrouin    ###   ########.fr       */
+/*   Updated: 2018/04/21 10:54:31 by cfrouin          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #ifndef OP_H
 # define OP_H
 
+# include <stdlib.h>
+
 /*
 ** Toutes les tailles sont en octets.
 ** On part du principe qu'un int fait 32 bits. Est-ce vrai chez vous ?
 */
 
-# define IND_SIZE				2
 # define REG_SIZE				1
-# define DIR_SIZE				REG_SIZE
+# define DIR_SIZE				2
+# define IND_SIZE				2
 
 # define REG_CODE				1
 # define DIR_CODE				2
@@ -28,9 +30,10 @@
 
 # define MAX_ARGS_NUMBER		4
 # define MAX_PLAYERS			4
-# define MEM_SIZE				(4*64)
+# define ADDRESS_MAX			65536
+# define MEM_SIZE				(4*1024)
 # define IDX_MOD				(MEM_SIZE / 8)
-# define CHAMP_MAX_SIZE			(MEM_SIZE / 6)
+# define CHAMP_MAX_SIZE			(MEM_SIZE / 4)
 
 # define COMMENT_CHAR			'#'
 # define LABEL_CHAR				':'
@@ -66,7 +69,7 @@ typedef char	t_arg_type;
 
 # define PROG_NAME_LENGTH		(128)
 # define COMMENT_LENGTH			(2048)
-# define COREWAR_EXEC_MAGIC		0xea83f3
+# define COREWAR_EXEC_MAGIC		0xABCDEF
 
 typedef struct					s_header
 {
@@ -93,6 +96,7 @@ typedef struct					s_op
 	char						*description;
 	int							has_pcode;
 	int							has_idx;
+	int							(*func)(t_data *data, t_champion *champion);
 }								t_op;
 
 #endif

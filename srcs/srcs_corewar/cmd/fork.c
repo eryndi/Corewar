@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   fork.c                                             :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: dwald <marvin@42.fr>                       +#+  +:+       +#+        */
+/*   By: dwald <dwald@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2018/02/07 16:03:12 by dwald             #+#    #+#             */
-/*   Updated: 2018/02/07 18:28:28 by dwald            ###   ########.fr       */
+/*   Updated: 2018/04/20 20:50:05 by cfrouin          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,52 +17,58 @@
 ** except its PC, which will be put at (PC + (1st parameter % IDX_MOD)).
 */
 
-/*Genere un nouveau processus a l'adresse passée en parametre par copie du processus appelant. Le nouveau processus garde donc l'etat de tout les registres et du carry, seul le PC differe ( sauf dans le cas d'un fork %0 ).*/
+static	void	verbose_fork(t_data *data, t_champion *champ, t_champion *child)
+{
+	char	color[7];
 
-static	void	copy_champion(t_champion *child, t_champion *parent, int pc_dest)
+	if ((data->verbose & 4) == 4)
+	{
+		color_champion(champ->number, color);
+		ft_printf("%sPlayer #%i | fork %d (%d)\n"RESET, color, champ->number,
+		get_address(champ->args[0]), child->pc->id);
+	}
+	return ;
+}
+
+static	void	copy_champ(t_champion *child, t_champion *parent, int pc_dest)
 {
 	int i;
 
 	i = -1;
-	child->lastLive = parent->lastLive;
 	child->carry = parent->carry;
-//	child->liveNbr;
-	child->ipc = pc_dest;
 	child->pc = find_pc_node(parent, pc_dest);
-	ft_strncpy(child->name, parent->name, COMMENT_LENGTH + 1);
-	child->wait = parent->wait;
 	child->alive = parent->alive;
-	child->number = parent->number;
-	child->nextOp = parent->nextOp;
-//	child->op = parent->op;
+	child->nextop = -1;
 	child->size = parent->size;
-//	child->code = strncpy(child->code, parent->code, MEM_SIZE);
-	ft_strncpy(child->comment,parent->comment,COMMENT_LENGTH + 1);
+	ft_strncpy(child->name, parent->name, PROG_NAME_LENGTH);
+	ft_strncpy((char*)child->code, (const char*)parent->code, MEM_SIZE);
+	ft_strncpy(child->comment, parent->comment, COMMENT_LENGTH + 1);
 	while (++i <= REG_NUMBER + 1)
 		child->reg[i] = parent->reg[i];
-	i = -1;
-	while (++i <= 3)
-		child->argsType[i] = parent->argsType[i];
 	return ;
 }
 
-int			corewar_fork(t_data *data, t_champion *champ)
+int				corewar_fork(t_data *data, t_champion *champ)
 {
 	short		pc_dest;
-	t_champion	*parent;
 	t_champion	*child;
-	
-	if (champ->argsType[0] != DIR_CODE)
-		return (-1);
-	pc_dest = champ->ipc + (champ->args[0] % IDX_MOD); //remove % for lfork
+
+	if (data->debug)
+		dump_state("fork", data, champ);
+	if (champ->argstype[0] != DIR_CODE)
+	{
+		if ((data->verbose & 32) == 32)
+			ft_printf("ERROR: Process %i tries to read instruction's parameter \
+with no valid argument type\n", champ->number);
+		return (-2);
+	}
+	pc_dest = mem_mod(champ->oldpc->id + idx_address(champ->args[0]));
 	if (prepare_champion(data, champ->filename, champ->number, true) == -1)
 		return (-1);
-	//copy_champion
-	parent = champ;
-	while (parent)
-		parent = parent->next;
-	child = parent;
-	parent = champ;
-	copy_champion(child, parent, pc_dest);
+	child = data->champions;
+	while (child->next != NULL)
+		child = child->next;
+	copy_champ(child, champ, pc_dest);
+	verbose_fork(data, champ, child);
 	return (1);
 }

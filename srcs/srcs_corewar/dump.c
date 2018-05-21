@@ -6,7 +6,7 @@
 /*   By: cyrillef <cyrillef@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2018/02/07 11:23:49 by cyrillef          #+#    #+#             */
-/*   Updated: 2018/03/07 15:23:33 by cfrouin          ###   ########.fr       */
+/*   Updated: 2018/04/20 20:45:24 by cfrouin          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,7 +19,6 @@ void				dump(t_data *data)
 
 	i = 0;
 	node = data->map;
-	// ft_printf("%d ipc\n", data->champions->ipc);
 	while (i < MEM_SIZE)
 	{
 		if (i % 64 == 0)
@@ -30,7 +29,10 @@ void				dump(t_data *data)
 			}
 			ft_printf("0x%04x : ", i);
 		}
-		ft_printf("%s ", node->content);
+		if (node->content[0] == '\0')
+			ft_printf("00 ");
+		else
+			ft_printf("%s ", node->content);
 		i++;
 		node = node->next;
 	}

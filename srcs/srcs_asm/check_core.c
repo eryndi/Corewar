@@ -6,7 +6,7 @@
 /*   By: kda-silv <kda-silv@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2018/02/26 17:50:26 by kda-silv          #+#    #+#             */
-/*   Updated: 2018/03/13 13:53:38 by kda-silv         ###   ########.fr       */
+/*   Updated: 2018/04/20 22:25:27 by kda-silv         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -61,7 +61,7 @@ static t_data	*init_instructions(t_data *data)
 	return (data);
 }
 
-static void		check_instruction(char **tab, int count_word, t_data *data
+static int		check_instruction(char **tab, int count_word, t_data *data
 					, char *line)
 {
 	char		**instructions;
@@ -76,6 +76,7 @@ static void		check_instruction(char **tab, int count_word, t_data *data
 	data->args[0] = -1;
 	data->args[1] = -1;
 	data->args[2] = -1;
+	data->nbr_arg = 0;
 	while (instructions[++count] != NULL)
 		if (ft_strcmp(tab[count_word], instructions[count]) == 0)
 		{
@@ -85,6 +86,9 @@ static void		check_instruction(char **tab, int count_word, t_data *data
 		}
 	if (flag == 0)
 		asm_error("Instruction Missed", 2, data, line);
+	ft_word_tab_free(instructions);
+	ft_word_tab_free(tab);
+	return (1);
 }
 
 static int		error_start_line(char **tab, t_data *data, char *line)
@@ -93,6 +97,8 @@ static int		error_start_line(char **tab, t_data *data, char *line)
 
 	count = 0;
 	if (tab[0] == NULL)
+		return (0);
+	if (tab[0][0] == COMMENT_CHAR)
 		return (0);
 	while (tab[0][count] != '\0' && tab[0][count] != LABEL_CHAR)
 		++count;
@@ -107,8 +113,11 @@ int				check_core(char *line, t_data *data, int count_word)
 	char		**tab;
 
 	bad_char(line, data);
-	if ((tab = ft_word_tab(line)) == NULL)
+	if (empty_line(line) == 0)
+		return (0);
+	if ((tab = ft_word_tab_asm(line)) == NULL)
 		asm_error("Error Malloc", 1, data, line);
+	fill_data_tab(data, line, tab);
 	if (error_start_line(tab, data, line) == 0)
 		return (0);
 	if (tab[count_word][ft_strlen(tab[count_word]) - 1] == LABEL_CHAR)
@@ -117,10 +126,13 @@ int				check_core(char *line, t_data *data, int count_word)
 			asm_error("Bad Label", 2, data, line);
 		else
 			++count_word;
+		if (tab[count_word] == NULL)
+		{
+			ft_word_tab_free(tab);
+			return (1);
+		}
 	}
-	check_instruction(tab, count_word, data, line);
-	if (tab[count_word + 2] != NULL && tab[count_word + 2][0] != COMMENT_CHAR)
-		asm_error("One instruction by line", 2, data, line);
-	ft_word_tab_free(tab);
-	return (1);
+	if (tab[count_word][0] == COMMENT_CHAR)
+		return (1);
+	return (check_instruction(tab, count_word, data, line));
 }

@@ -6,7 +6,7 @@
 /*   By: kda-silv <kda-silv@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2018/02/27 11:42:13 by kda-silv          #+#    #+#             */
-/*   Updated: 2018/03/07 14:59:07 by kda-silv         ###   ########.fr       */
+/*   Updated: 2018/04/20 21:29:02 by kda-silv         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,8 +17,11 @@ void			ft_word_tab_free(char **tab)
 	int			count;
 
 	count = -1;
+	if (tab == NULL)
+		return ;
 	while (tab[++count] != NULL)
 		free(tab[count]);
+	free(tab[count]);
 	free(tab);
 }
 

@@ -42,9 +42,9 @@ int				prepare_next_op(t_data *data)
 		champion = champion->next;
 	while (champion != NULL)
 	{
-		if (champion->nextOp <= 0)
-			champion->nextOp = get_next_op(champion);
-		champion->nextOp--;
+		if (champion->nextop <= 0)
+			champion->nextop = get_next_op(champion);
+		champion->nextop--;
 		champion = champion->prev;
 	}
 	return (1);

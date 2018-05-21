@@ -6,97 +6,49 @@
 /*   By: cyrillef <cyrillef@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2018/01/09 15:53:03 by cyrillef          #+#    #+#             */
-/*   Updated: 2018/03/13 17:46:01 by cfrouin          ###   ########.fr       */
+/*   Updated: 2018/04/21 09:34:07 by cfrouin          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "corewar.h"
 
-static void		get_params_type(t_champion *champion)
-{
-	t_node		*node;
-	char		byte;
-	int			i;
-
-	i = champion->op.nb_params;
-	node = champion->pc->next;
-	byte = node->contentn;
-	while (i++ < 4)
-		byte = byte >> 2;
-	i = champion->op.nb_params - 1;
-	while (i >= 0)
-	{
-		champion->argsType[i] = byte & 0b11;
-		byte = byte >> 2;
-		i--;
-	}
-}
-
-static void		get_one_param(t_champion *champion, int argsize, int n, int *pos)
+static int		check_regs(t_champion *champ)
 {
 	int			i;
-	int			nb;
-	t_node		*node;
-
-	// i = 0;
-	// if (len == DIR && g_op_tab[player->next_op].has_idx == 1)
-	// 	len = 2;
-	// tmp = T_LAB - len;
-	// while (i < len)
-	// {
-	// 	arg = ((player->pc) + *index + 1 + g_op_tab[player->next_op].has_pcode);
-	// 	player->op_args[arg_nbr][tmp] = ft_hex2intdec(arg->hex);
-	// 	(*index)++;
-	// 	tmp++;
-	// 	i++;
-	// }
-	i = -1;
-	nb = 0;
-	node = champion->pc;
-	while (++i < *pos)
-		node = node->next;
-	if (champion->argsType[n] == DIR_CODE && champion->op.has_idx == 0)
-		argsize = 4;
-	i = -1;
-	while (++i < argsize)
-	{
-		nb += (node->contentn << ((argsize - (i + 1)) * 8));
-		// ft_printf("%d/%d : %d\n", i, argsize, nb);
-		node = node->next;
-	}
-	*pos += i;
-	champion->args[n] = nb;
-}
-
-static void		get_params(t_champion *champion)
-{
-	int			i;
-	int			pos;
-	int			argsize;
 
 	i = 0;
-	pos = 2;
-	if (champion->op.nb_params == 1 && champion->op.param_types[0] == 2)
-		pos = 0;
-	while (i < champion->op.nb_params)
+	while (i < champ->op.nb_params)
 	{
-		if (champion->argsType[i] == REG_CODE)
-			argsize = REG_SIZE;
-		else if (champion->argsType[i] == DIR_CODE)
-			argsize = DIR_SIZE;
-		else if (champion->argsType[i] == IND_CODE)
-			argsize = IND_SIZE;
-		get_one_param(champion, argsize, i, &pos);
+		if (champ->op.param_types[i] == REG_CODE)
+		{
+			if (champ->args[i] <= 0 || champ->args[i] > 16)
+				return (-1);
+		}
 		i++;
 	}
-	if (champion->op.opcode == 1)
+	return (1);
+}
+
+static void		verbose_adv(t_data *data, t_champion *champion)
+{
+	int			diff;
+	int			i;
+	t_node		*tmp;
+
+	diff = champion->pc->id - champion->oldpc->id;
+	if ((data->verbose & 16) == 16)
 	{
-		pos = 5;
+		ft_printf("ADV %d (0x%04x -> 0x%04x) ",
+			diff, champion->oldpc->id, champion->pc->id);
+		i = -1;
+		tmp = champion->oldpc;
+		while (++i < diff)
+		{
+			ft_printf("%s ", tmp->content);
+			tmp = tmp->next;
+		}
+		ft_printf("\n");
 	}
-	champion->ipc += pos;
-	i = 0;
-	while (i++ < pos)
-		champion->pc = champion->pc->next;
 }
 
 int				do_next_op(t_data *data)
@@ -108,11 +60,20 @@ int				do_next_op(t_data *data)
 		champion = champion->next;
 	while (champion != NULL)
 	{
-		if (champion->nextOp == 0)
+		if (champion->nextop == 0)
 		{
-			get_params_type(champion);
+			champion->oldpc = champion->pc;
 			get_params(champion);
-			champion->op.func(data, champion);
+			verbose_adv(data, champion);
+			if (check_regs(champion) == -1)
+			{
+				champion = champion->prev;
+				continue ;
+			}
+			if (champion->op.func(data, champion) == -1)
+				return (-1);
+			if (data->debug)
+				dump_state(NULL, data, champion);
 		}
 		champion = champion->prev;
 	}

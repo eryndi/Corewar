@@ -6,13 +6,13 @@
 /*   By: cyrillef <cyrillef@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2017/11/24 15:34:50 by cyrillef          #+#    #+#             */
-/*   Updated: 2018/03/02 16:43:32 by dwald            ###   ########.fr       */
+/*   Updated: 2018/04/20 19:43:36 by cfrouin          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "corewar.h"
 
-static void			read_file(t_data *data, int fd, t_champion *champion)
+static int			read_file(t_data *data, int fd, t_champion *champion)
 {
 	int				index;
 	char			buff[1];
@@ -21,22 +21,24 @@ static void			read_file(t_data *data, int fd, t_champion *champion)
 
 	if (read(fd, &tmp, sizeof(t_header)) <= 0)
 		corewar_error(data, "Error when reading champion's header.\n");
+	if (tmp.magic != COREWAR_EXEC_MAGIC)
+		corewar_error(data, "Wrong magic\n");
 	ft_strcpy(champion->name, tmp.prog_name);
 	ft_strcpy(champion->comment, tmp.comment);
 	index = 0;
 	bzero(buff, 1);
-	bzero(tmp_hex, 3);
 	bzero(champion->code, 1024);
 	while (read(fd, buff, 1) > 0)
 	{
+		bzero(tmp_hex, 3);
 		number_to_hex_str(buff[0], &tmp_hex);
 		tmp_hex[2] = ' ';
 		ft_strncpy((char *)&champion->code[index], (char*)tmp_hex, 3);
 		index += 3;
 		bzero(buff, 1);
-		bzero(tmp_hex, 3);
 	}
 	champion->size = ft_strlen((char*)champion->code) / 3;
+	return (1);
 }
 
 static int			read_champion(t_data *data, t_champion *champion)
@@ -53,6 +55,10 @@ static int			read_champion(t_data *data, t_champion *champion)
 	read_file(data, fd, champion);
 	if (champion->size > CHAMP_MAX_SIZE)
 	{
+		if (champion->prev == NULL)
+			data->champions = champion->next;
+		else
+			champion->prev->next = champion->next;
 		free(champion);
 		corewar_error(data, "Champion is too big.\n");
 	}
