@@ -6,7 +6,7 @@
 /*   By: cyrillef <cyrillef@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2017/11/24 15:23:20 by cyrillef          #+#    #+#             */
-/*   Updated: 2018/03/12 16:38:59 by dwald            ###   ########.fr       */
+/*   Updated: 2018/03/14 16:13:16 by dwald            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -69,6 +69,7 @@ typedef struct			s_champion
 
 typedef struct			s_data
 {
+	int					debug;
 	int					dump;
 	int					graph;
 	t_champion			*champions;
@@ -82,6 +83,12 @@ typedef struct			s_data
 	bool				pause;
 	int					speed;
 }						t_data;
+
+/*
+** debug.c
+** Contains all debug functions
+*/
+void					dump_state(char *msg, t_data *data, t_champion *champ);
 
 /*
 ** dump.c
